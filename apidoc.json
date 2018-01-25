@@ -1,0 +1,7 @@
+{
+  "name": "api.ubports.com",
+  "version": "1.0.0",
+  "description": "UBports web apis",
+  "title": "UBports web API",
+  "url" : "https://api.ubports.com/v1"
+}
