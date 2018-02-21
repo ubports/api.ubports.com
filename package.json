@@ -5,12 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "install": "n 7.6.0",
-    "start": "n use 7.6.0 ./bin/www",
+    "start": "node ./bin/www",
     "gen-doc": "apidoc -i src/ -o docs"
   },
   "author": "The UBports Developers <devs@ubports.com>",
-  "license": "ISC",
+  "license": "GPL-3.0",
   "dependencies": {
     "apidoc": "^0.17.6",
     "aws-sdk": "^2.186.0",
@@ -23,6 +22,7 @@
     "mongoose-unique-validator": "^2.0.0",
     "multer": "^1.3.0",
     "multer-s3": "^2.7.0",
-    "n": "^2.1.8"
+    "n": "^2.1.8",
+    "system-image-node-module": "^1.0.0"
   }
 }
