@@ -16,6 +16,7 @@
  */
 
 const express = require("express");
+const config = require('../../config.json').auth;
 
 const apiToHtmlUrl = api => {
   // return just api for now
@@ -50,10 +51,10 @@ class ApiRouter {
   }
 
   apiKeyMatch(req, res, next) {
-    if (req.params.apiKey === "b")
+    if (req.headers && config.keys.indexOf(req.headers["x-api-key"]) > -1)
       next()
     else
-      res.sendCode(401)
+      res.sendStatus(401)
   }
 
   get(apiPoint, callback) {
@@ -62,15 +63,15 @@ class ApiRouter {
   }
   post(apiPoint, callback) {
     this._apiList.push("post "+apiPoint);
-    this._router.post(apiPoint, callback);
+    this._router.post(apiPoint, [this.apiKeyMatch, callback]);
   }
   put(apiPoint, callback) {
     this._apiList.push("put "+apiPoint);
-    this._router.put(apiPoint, callback);
+    this._router.put(apiPoint, [this.apiKeyMatch, callback]);
   }
   delete(apiPoint, callback) {
     this._apiList.push("delete "+apiPoint);
-    this._router.delete(apiPoint, callback);
+    this._router.delete(apiPoint, [this.apiKeyMatch, callback]);
   }
 
   get router() {
