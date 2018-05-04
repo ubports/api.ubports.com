@@ -19,62 +19,130 @@ const mongoose = require('mongoose');
 const uniqueValidator = require('mongoose-unique-validator');
 const Schema = mongoose.Schema;
 
+const deviceAliasSchema = new Schema({
+  device: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  aliasFor: { type: String, ref: "devices" , required: true}
+});
+
 const deviceSchema = new Schema({
-    device: {
+    device: { // Device codename, this needs to unique
       type: String,
       required: true,
       unique: true
     },
-    date: Date,
-    community: Boolean,
-    name: {
+    alias: Array, // Alternative device codenames
+    date: Date, // Internal create date
+    modify: { // See when and who modifyed it last
+      date: Date,
+      user: String
+    },
+    community: Boolean, // Is the device a community device
+    name: { // Human-readable device name
       type: String,
       required: true
     },
-    priority: {
+    priority: { // priority is set to be able to list devices in a logical order
       type: Number,
       required: false
     },
-    status: {
-      type: Number,
-      required: false
+    specs: { // Device specs
+      formFactor: String, // phone, tablet, etc.
+      screenSize: String, // screen size in inches
+      screenResolution: String, // screen resolution in pixels
+      cameraResolution: { // camera resolution
+        front: String, // front camera resolution in mp
+        back: String // front camera resolution in mp
+      },
+      cpu: String, // cpu type
+      ram: String, // ram size
+      storage: String, // storage size
+      sdCardSlot: Boolean, // does the device support sd cards
+      supportedNetworks: {
+        gsm: Boolean, // does the device support GSM
+        cdma: Boolean // does the device support CDMA
+      }
     },
-    whatIsWorking: {
+    whatIsWorking: { // Current status of the device
+      display: Boolean,
+      touch: Boolean,
+      haptics: Boolean,
+      usb: Boolean,
+      bluetooth: Boolean,
+      celluar: {
+        voice: Boolean,
+        sms: Boolean,
+        data: Boolean
+      },
+      camera: {
+        front: Boolean,
+        back: Boolean
+      },
+      rotation: Boolean,
+      wifi: Boolean,
+      gps: Boolean,
+      audio: {
+          input: Boolean,
+          output: Boolean
+      },
+      stable: Number // 1 bad, 2 somewhat good, 3 good, 4 no issues
+    },
+    about: { // Markdown about the device text
+      type: String,
+      required: true
+    },
+    maintainer: { // Who is maintaning this, can be more than one
       type: Array,
-      required: false
-    },
-    about: {
-      type: String,
       required: true
     },
-    maintainer: {
-      type: String,
-      required: true
+    comment: String, // Optinal comment, this is used in specal cases (example with special install instructions)
+    build: { //
+      enable: Boolean, // Can it be built
+      stable: Boolean // Is it built for the stable channel
     },
-    progress: Number,
-    comment: String,
-    build: {
-      enable: Boolean,
-      stable: Boolean
-    },
-    image: String,
-    install: {
-      installable: {
+    image: String, // Device pictue
+    video: String, // Device video
+    deviceLogo: String, // Device logo
+    install: {  // Install info
+      installable: { // Can it be installed (have system-image server)
         type: Boolean,
         required: true
       },
-      multirom: Boolean,
-      install_settings: {
-        bootstrap: Boolean,
-        fastboot: Boolean,
-        method: String
+      multirom: Boolean, // Does it support multirom
+      installSettings: { // Installation infomation
+        bootstrap: Boolean, // Device support fastboot boot
+        fastboot: Boolean, // Device supports fastboot
+        download: Boolean, // Samsung download mode
+        method: String, // Method to install with, currently only supports system-image
+        oemUnlockable: Boolean, // Can the bootloader be unlocked
+        special: String
       },
-      images: Array,
-      buttons: {
-        bootloaded: String,
-        recovery: String
+      images: Array, // Device images (recovery.img and boot.img)
+      /*
+      [
+        type: "logo",
+        url: "http://logo.png",
+        checksum: "dsdsds"
+      ]
+      */
+      buttons: { // Buttons needed to get to the different states
+        bootloader: {
+          button: String,
+          instruction: String
+        },
+        recovery: {
+          button: String,
+          instruction: String
+        },
+        download: {
+          button: String,
+          instruction: String
+        }
       },
-      system_server: {
+      systemServer: {
         blacklist: Array,
         selected: String
       }
@@ -96,11 +164,11 @@ const usersSchema = new Schema({
       type: String,
       required: true
     },
-    ubuntu_id: {
+    ubuntuId: {
       type: String,
       required: true
     },
-    is_member: {
+    isMember: {
       type: Boolean,
       required: true
     }
@@ -130,6 +198,11 @@ const installReportSchema = new Schema({
     }
   });
 
+  deviceAliasSchema.pre("save", (next) => {
+    if (!this.date)
+      this.date = new Date();
+    next();
+  })
   deviceSchema.pre("save", (next) => {
     if (!this.date)
       this.date = new Date();
@@ -148,6 +221,7 @@ const installReportSchema = new Schema({
 
 
 module.exports = [
+  {name: "deviceAlias", schema: deviceAliasSchema},
   {name: "devices", schema: deviceSchema},
   {name: "users", schema: usersSchema},
   {name: "installReport", schema: installReportSchema}
